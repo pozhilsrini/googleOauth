@@ -1,0 +1,70 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+apply plugin: 'gradle-one-jar'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+description = "Google Oauth projects"
+
+jar {
+    baseName = 'google'
+    version = "${googleVersion}"
+}
+
+springBoot {
+    mainClass = 'GoogleApp'
+}
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",
+                classpath ('com.github.rholder:gradle-one-jar:1.0.4')
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/libs-milestone" }
+}
+
+//excluding tomcat inorder to use undertow server
+configurations {
+    compile.exclude module: "spring-boot-starter-tomcat"
+}
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-undertow:${springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
+            "org.springframework.security.oauth:spring-security-oauth2:2.0.12.RELEASE",
+            "org.projectlombok:lombok:1.16.10"
+
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
+            "junit:junit"
+}
+
+task oneJar(type: OneJar) {
+    mainClass = 'GoogleApp'
+}
+
+test.onlyIf { Boolean.getBoolean('run.tests') }
+
+artifacts {
+    oneJar
+}
+
+run {
+    systemProperties = System.properties
+    args
+}
